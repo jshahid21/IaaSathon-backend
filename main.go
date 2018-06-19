@@ -9,9 +9,10 @@ import (
 )
 
 func main() {
-	connectionString := os.Getenv("ORACLE_USERNAME") + ":"
+	connectionString := os.Getenv("ORACLE_USERNAME") + "/"
 	connectionString += os.Getenv("ORACLE_PASSWD") + "@"
 	connectionString += os.Getenv("ORACLE_SID")
+	log.Print(connectionString)
 	db, err := sql.Open("goracle", connectionString)
 	if err != nil {
 		log.Fatal(err)
