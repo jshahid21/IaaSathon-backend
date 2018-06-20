@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -38,12 +37,12 @@ func TestMain(m *testing.M) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
-	fmt.Println("ORACLE_USERNAME: " + os.Getenv("ORACLE_USERNAME"))
-	fmt.Println("ORACLE_PASSWORD: " + os.Getenv("ORACLE_PASSWORD"))
-	fmt.Println("ORACLE_SID: " + os.Getenv("ORACLE_SID"))
+	log.Println("ORACLE_USERNAME: " + os.Getenv("ORACLE_USERNAME"))
+	log.Println("ORACLE_PASSWORD: " + os.Getenv("ORACLE_PASSWORD"))
+	log.Println("ORACLE_SID: " + os.Getenv("ORACLE_SID"))
 }
 
 // TestGetPolls test the GET REST API endpoint
