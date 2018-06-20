@@ -40,5 +40,11 @@ Database is administrator managed
 $ sqlplus / as sysdba
  SQL> CREATE USER c##<your-name> IDENTIFIED BY <your-password>;
  SQL> GRANT CREATE SESSION TO c##<your-name>;
+ SQL> GRANT DBA TO c##phil;
+ SQL> exit
+ $ sqlplus /nolog
+ SQL> CONNECT c##<your-name>
+ PASSWORD: <password>
+ SQL> CREATE TABLE poll(cat number, dog number);
  ```
 
