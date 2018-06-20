@@ -32,23 +32,23 @@ func TestMain(m *testing.M) {
 	scanner := bufio.NewScanner(file)
 
 	// create an array where stringArray[0] is the key and
-	// stringArray[1] is the value
-	var stringArray []string
+	// stringArray[1] is the value for each environment variable
+	var stringArrayForEnvVar []string
 
 	// Scan each line in the file
 	for scanner.Scan() {
-		// Split the line so that stringArray[0] is the keyh
+		// Split the line so that stringArray[0] is the key
 		// and that stringArray[1] is the value
-		stringArray = strings.Split(scanner.Text(), "=")
+		stringArrayForEnvVar = strings.Split(scanner.Text(), "=")
 
 		// set the environment value according to the key in stringArray
 		// set pattern for regex to (ORACLE_$$$$) for each string in stringArray[1] to match to
-		if re := regexp.MustCompile("(ORACLE_USERNAME)"); re.MatchString(stringArray[0]) {
-			os.Setenv("ORACLE_USERNAME", stringArray[1])
-		} else if re := regexp.MustCompile("(ORACLE_PASSWORD)"); re.MatchString(stringArray[0]) {
-			os.Setenv("ORACLE_PASSWORD", stringArray[1])
-		} else if re := regexp.MustCompile("(ORACLE_SID)"); re.MatchString(stringArray[0]) {
-			os.Setenv("ORACLE_SID", stringArray[1])
+		if re := regexp.MustCompile("(ORACLE_USERNAME)"); re.MatchString(stringArrayForEnvVar[0]) {
+			os.Setenv("ORACLE_USERNAME", stringArrayForEnvVar[1])
+		} else if re := regexp.MustCompile("(ORACLE_PASSWORD)"); re.MatchString(stringArrayForEnvVar[0]) {
+			os.Setenv("ORACLE_PASSWORD", stringArrayForEnvVar[1])
+		} else if re := regexp.MustCompile("(ORACLE_SID)"); re.MatchString(stringArrayForEnvVar[0]) {
+			os.Setenv("ORACLE_SID", stringArrayForEnvVar[1])
 		}
 	}
 
