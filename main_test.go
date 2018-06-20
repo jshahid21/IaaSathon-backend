@@ -1,11 +1,50 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"regexp"
+	"strings"
 	"testing"
 )
+
+// TestMain initialize environment variables from .env file
+// in directory
+func TestMain(m *testing.M) {
+
+	file, err := os.Open(".env")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var stringArray []string
+	for scanner.Scan() {
+		stringArray = strings.Split(scanner.Text(), "=")
+
+		if re := regexp.MustCompile("(ORACLE_USERNAME)"); re.MatchString(stringArray[0]) {
+			os.Setenv("ORACLE_USERNAME", stringArray[1])
+		} else if re := regexp.MustCompile("(ORACLE_PASSWORD)"); re.MatchString(stringArray[0]) {
+			os.Setenv("ORACLE_PASSWORD", stringArray[1])
+		} else if re := regexp.MustCompile("(ORACLE_SID)"); re.MatchString(stringArray[0]) {
+			os.Setenv("ORACLE_SID", stringArray[1])
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("ORACLE_USERNAME: " + os.Getenv("ORACLE_USERNAME"))
+	fmt.Println("ORACLE_PASSWORD: " + os.Getenv("ORACLE_PASSWORD"))
+	fmt.Println("ORACLE_SID: " + os.Getenv("ORACLE_SID"))
+}
 
 // TestGetPolls test the GET REST API endpoint
 // for getPolls function
@@ -24,12 +63,15 @@ func TestGetPolls(t *testing.T) {
 	request.Header.Add("Content-type", "application/json")
 
 	// call the endpoint
-	getPolls(response, request)
+	GetPolls(response, request)
 
 	// verify that response code is 200 OK
 	checkResponseCode(t, http.StatusOK, response.Code)
 
 	// verify that the the response body is OK
+
+	// TODO
+	// modify actual string for regex pattern
 	checkResponseBody(t, response.Body.String(), `{"status": "OK"}`)
 }
 
@@ -37,22 +79,31 @@ func TestGetPolls(t *testing.T) {
 // for submitPolls function
 func TestSubmitPoll(t *testing.T) {
 	// create test router
+	log.Print("testing submitting poll")
 
+	message := []byte(`{"name": "cat"}`)
 	// initialize call method with POST
 	// call router with path /submitPoll
-
+	request, err := http.NewRequest("POST", "/submitPoll", bytes.NewBuffer(message))
+	if err != nil {
+		log.Fatal(err)
+	}
+	response := httptest.NewRecorder()
 	// initialize the header with content-type
 	// as application/json
-
+	request.Header.Add("Content-type", "application/json")
 	// call the endpoint
+	SubmitPoll(response, request)
 
 	// verify that response code is 200 OK
-
-	// verify that the content type is application/json
-	// in response header
+	checkResponseCode(t, http.StatusOK, response.Code)
 
 	// verify that response body is a JSON body
 	// with "cat": # and "dog": #
+
+	// TODO
+	// modify actual string to regex pattern
+	checkResponseBody(t, response.Body.String(), `{"cat": [0-9*], "dog": [0-9*]}`)
 }
 
 // checkResponseCode verify the response code

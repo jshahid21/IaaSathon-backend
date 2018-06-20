@@ -19,8 +19,8 @@ func main() {
 	// Create new router to handle routes
 	router := mux.NewRouter()
 
-	router.HandleFunc("/getPolls", getPolls).Methods("GET")
-	router.HandleFunc("/submitPolls", submitPoll).Methods("POST")
+	router.HandleFunc("/getPolls", GetPolls).Methods("GET")
+	router.HandleFunc("/submitPolls", SubmitPoll).Methods("POST")
 
 	// Configure CORS
 	c := cors.AllowAll()
@@ -36,7 +36,7 @@ func main() {
 func getDBConnection() (db *sql.DB) {
 	//required credentials are username, password, and SID
 	connectionString := os.Getenv("ORACLE_USERNAME") + "/"
-	connectionString += os.Getenv("ORACLE_PASSWD") + "@"
+	connectionString += os.Getenv("ORACLE_PASSWORD") + "@"
 	connectionString += os.Getenv("ORACLE_SID")
 
 	//open connection
@@ -50,9 +50,9 @@ func getDBConnection() (db *sql.DB) {
 	return db
 }
 
-// getPolls return poll results for the number of votes for
+// GetPolls return poll results for the number of votes for
 // either cats or dogs
-func getPolls(w http.ResponseWriter, r *http.Request) {
+func GetPolls(w http.ResponseWriter, r *http.Request) {
 	var (
 		id   int
 		name string
@@ -85,9 +85,9 @@ func getPolls(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// submitPoll insert into db the vote for
+// SubmitPoll insert into db the vote for
 // either cat or dog
-func submitPoll(w http.ResponseWriter, r *http.Request) {
+func SubmitPoll(w http.ResponseWriter, r *http.Request) {
 
 	//grab db connection to oracle DB
 	db := getDBConnection()
