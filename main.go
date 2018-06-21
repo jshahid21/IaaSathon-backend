@@ -14,6 +14,15 @@ import (
 	_ "gopkg.in/goracle.v2"
 )
 
+type polls struct {
+	Cat int `json:"cat"`
+	Dog int `json:"dog"`
+}
+
+type status struct {
+	Status string `json:"status"`
+}
+
 func main() {
 
 	// Create new router to handle routes
@@ -33,55 +42,59 @@ func main() {
 
 // getDBConnection grab environment variables to open
 // connection oracle db
-func getDBConnection() (db *sql.DB) {
+func getDBConnection() (db *sql.DB, err error) {
 	//required credentials are username, password, and SID
 	connectionString := os.Getenv("ORACLE_USERNAME") + "/"
 	connectionString += os.Getenv("ORACLE_PASSWORD") + "@"
 	connectionString += os.Getenv("ORACLE_SID")
 
 	//open connection
-	db, err := sql.Open("goracle", connectionString)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	db, err = sql.Open("goracle", connectionString)
 
 	//return connection
-	return db
+	return db, err
 }
 
 // GetPolls return poll results for the number of votes for
 // either cats or dogs
 func GetPolls(w http.ResponseWriter, r *http.Request) {
-	var (
-		id   int
-		name string
-	)
 
 	// grab db connection
-	db := getDBConnection()
+	db, err := getDBConnection()
+	if err != nil {
+		var statusAsJSON status
+		statusAsJSON.Status = fmt.Sprintf("Error: %s", err)
+		sendBytes(w, statusAsJSON)
+		log.Printf("Error with connection to DB: %s\n", err)
+		return
+	}
 	defer db.Close()
 
 	// query for the sum of cat and dog votes
 	rows, err := db.Query("SELECT sum(dog), sum(cat) FROM poll")
 	if err != nil {
-		log.Fatalf("getPolls error: %s", err)
+		var statusAsJSON status
+		statusAsJSON.Status = fmt.Sprintf("Error: %s", err)
+		sendBytes(w, statusAsJSON)
+		log.Printf("Error with connection to DB: %s\n", err)
+		return
 	}
 	defer rows.Close()
 
 	// loop through rows to grab the sum of votes
 	// for cat and dog
+	var pollsAsJSON polls
+
 	for rows.Next() {
-		err := rows.Scan(&id, &name)
+		// scan cat and dog results to struct
+		err := rows.Scan(&pollsAsJSON.Dog, &pollsAsJSON.Cat)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println(id, name)
 	}
 
-	// initialize json with cat and dog votes
-
-	// serve JSON response
+	// load struct as bytes to be send
+	sendBytes(w, pollsAsJSON)
 
 }
 
@@ -89,8 +102,18 @@ func GetPolls(w http.ResponseWriter, r *http.Request) {
 // either cat or dog
 func SubmitPoll(w http.ResponseWriter, r *http.Request) {
 
+	statusAsJSON := status{
+		Status: "ok",
+	}
+
 	//grab db connection to oracle DB
-	db := getDBConnection()
+	db, err := getDBConnection()
+	if err != nil {
+		statusAsJSON.Status = fmt.Sprintf("Error: %s", err)
+		sendBytes(w, statusAsJSON)
+		log.Printf("Error with connection to DB: %s\n", err)
+		return
+	}
 	defer db.Close()
 
 	// unmarshal request body to generic interface
@@ -100,19 +123,16 @@ func SubmitPoll(w http.ResponseWriter, r *http.Request) {
 	// prepare insertion statement
 	// grab from request body the vote(cat or dog)
 	// and create a new row with the vote for cat or dog
-	stmt, err := db.Prepare("INSERT INTO poll(?) VALUES(1)")
+	_, err = db.Exec("INSERT INTO poll(" + reqBodyAsJSON["name"].(string) + ") VALUES(1)")
 	if err != nil {
-		log.Fatalf("submitPoll error: %s", err)
+		statusAsJSON.Status = fmt.Sprintf("Error: %s", err)
+		sendBytes(w, statusAsJSON)
+		log.Printf("submitPoll error: %s\n", err)
+		return
 	}
 
-	// execute statement to DB
-	// declare that the vote is for either cat of dog
-	_, err = stmt.Exec(reqBodyAsJSON["name"].(string))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// return that response is okay
+	// create struct since status is okay
+	sendBytes(w, statusAsJSON)
 
 }
 
@@ -139,4 +159,15 @@ func unmarshalJSON(r *http.Request) (reqBodyAsJSON map[string]interface{}) {
 	// create a map variable from the generic interface
 	reqBodyAsJSON = genericInterface.(map[string]interface{})
 	return
+}
+
+func sendBytes(w http.ResponseWriter, responseAsJSON interface{}) {
+	// load struct and convert to bytes to be send
+	responseAsBytes, err := json.Marshal(responseAsJSON)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// set header and send bytes
+	w.Header().Set("Content-type", "application/json")
+	w.Write(responseAsBytes)
 }

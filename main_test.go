@@ -60,13 +60,15 @@ func TestMain(m *testing.M) {
 	log.Println("ORACLE_USERNAME: " + os.Getenv("ORACLE_USERNAME"))
 	log.Println("ORACLE_PASSWORD: " + os.Getenv("ORACLE_PASSWORD"))
 	log.Println("ORACLE_SID: " + os.Getenv("ORACLE_SID"))
+
+	os.Exit(m.Run())
 }
 
 // TestGetPolls test the GET REST API endpoint
 // for getPolls function
 func TestGetPolls(t *testing.T) {
 	// create test router
-	log.Print("testing getting polls")
+	//log.Print("testing getting polls")
 
 	request, err := http.NewRequest("GET", "/getPoll", nil)
 	if err != nil {
@@ -88,7 +90,7 @@ func TestGetPolls(t *testing.T) {
 
 	// TODO
 	// modify actual string for regex pattern
-	checkResponseBody(t, response.Body.String(), `{"status": "OK"}`)
+	checkResponseBody(t, response.Body.String(), `{"cat":[0-9]*,"dog":[0-9]*}`)
 }
 
 // TestSubmitPoll test the POST API endpoint
@@ -119,7 +121,7 @@ func TestSubmitPoll(t *testing.T) {
 
 	// TODO
 	// modify actual string to regex pattern
-	checkResponseBody(t, response.Body.String(), `{"cat": [0-9*], "dog": [0-9*]}`)
+	checkResponseBody(t, response.Body.String(), `{"status":"ok"}`)
 }
 
 // checkResponseCode verify the response code
@@ -131,9 +133,13 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 }
 
 // checkResponseBody verify the response body
-func checkResponseBody(t *testing.T, actualBody, expectedBody string) {
+func checkResponseBody(t *testing.T, actualBody string, expectedBody string) {
 	// if response body is equal to tested body then ok
-	if actualBody != expectedBody {
-		t.Errorf("Expected %s. Got %s\n", expectedBody, actualBody)
+	if re := regexp.MustCompile(expectedBody); !re.MatchString(actualBody) {
+		t.Errorf("Expected %s.\n Got %s\n", expectedBody, actualBody)
 	}
+
+	// if actualBody != expectedBody {
+	// 	t.Errorf("Expected %s.\n Got %s\n", expectedBody, actualBody)
+	// }
 }
