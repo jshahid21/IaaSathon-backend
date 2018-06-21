@@ -29,7 +29,7 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/getPolls", GetPolls).Methods("GET")
-	router.HandleFunc("/submitPolls", SubmitPoll).Methods("POST")
+	router.HandleFunc("/submitPoll", SubmitPoll).Methods("POST")
 
 	// Configure CORS
 	c := cors.AllowAll()
