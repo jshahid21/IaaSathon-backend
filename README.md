@@ -1,6 +1,21 @@
 # IaaSathon-backend
 backend for OCI IaaSathon
 
+# Prereqs
+- the app is running on port 8000
+- the public load balancer that points to the front end servers should also point  point to these backend servers
+- to run with Docker
+```
+$ docker run -d -p 8000:8000 -e ORACLE_USERNAME=c##<your db user> -e ORACLE_PASSWORD=<db password> -e ORACLE_SID=<SID of oracle db> schmidtp0740/iaasathon-backend
+```
+- the Oracle SID should be in this format
+    ```
+    <public ip address of the oracle database>:1521/<FQDN of the oracle database>
+    ```
+    one such example is
+    ```
+    129.213.40.22:1521/pollDB_iad159.sub06181613380.philiaasathonen.oraclevcn.com
+    ```
 # Configuring the database
 - ssh into the instance
 ```
