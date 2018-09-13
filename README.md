@@ -3,7 +3,6 @@ backend for OCI IaaSathon
 
 # Prereqs
 - the app is running on port 8000
-- the public load balancer that points to the front end servers should also point  point to these backend servers
 - to run with Docker
 ```
 $ docker run -d -p 8000:8000 -e ORACLE_USERNAME=c##<your db user> -e ORACLE_PASSWORD=<db password> -e ORACLE_SID=<SID of oracle db> schmidtp0740/iaasathon-backend
