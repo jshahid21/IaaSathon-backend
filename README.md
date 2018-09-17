@@ -60,5 +60,7 @@ $ sqlplus / as sysdba
  SQL> CONNECT c##<your-name>
  PASSWORD: <password>
  SQL> CREATE TABLE poll(cat number, dog number);
+ SQL> INSERT INTO poll(cat, dog) VALUES (0,0);
+ SQL> COMMIT;
  ```
 
